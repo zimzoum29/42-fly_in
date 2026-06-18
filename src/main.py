@@ -1,32 +1,7 @@
-from pyray import (
-    begin_drawing,
-    begin_mode_3d,
-    Camera3D,
-    CameraMode,
-    CameraProjection,
-    clear_background,
-    close_window,
-    disable_cursor,
-    draw_cylinder_ex,
-    draw_plane,
-    draw_sphere,
-    draw_text,
-    end_drawing,
-    end_mode_3d,
-    init_window,
-    is_key_pressed,
-    KeyboardKey,
-    LIGHTGRAY,
-    RAYWHITE,
-    set_target_fps,
-    update_camera,
-    Vector2,
-    Vector3,
-    window_should_close,
-)
+from pyray import *
 from .models import Hub, Connection, Map
 from .parse import parse_input
-
+from .monitor import Monitor
 _COLOR_MAP: dict[str, tuple[int, int, int, int]] = {
     "red":     (230,  41,  55, 255),
     "green":   ( 0, 228,  48, 255),
@@ -41,10 +16,10 @@ _COLOR_MAP: dict[str, tuple[int, int, int, int]] = {
     "black":   ( 0,   0,   0, 255),
 }
 
-_DEFAULT_HUB_COLOR:  tuple[int, int, int, int] = (0, 121, 241, 255)   # blue
-_START_HUB_COLOR:    tuple[int, int, int, int] = (0, 228,  48, 255)   # green
-_END_HUB_COLOR:      tuple[int, int, int, int] = (253, 249,  0, 255)  # yellow
-_CONNECTION_COLOR:   tuple[int, int, int, int] = (130, 130, 130, 255) # gray
+_DEFAULT_HUB_COLOR:  tuple[int, int, int, int] = (0, 121, 241, 255)
+_START_HUB_COLOR:    tuple[int, int, int, int] = (0, 228,  48, 255)
+_END_HUB_COLOR:      tuple[int, int, int, int] = (253, 249,  0, 255)
+_CONNECTION_COLOR:   tuple[int, int, int, int] = (130, 130, 130, 255)
 
 
 def _hub_color(hub: Hub) -> tuple[int, int, int, int]:
@@ -78,13 +53,26 @@ def draw_map(game_map: Map) -> None:
     for hub in game_map.hubs:
         draw_hub(hub)
 
+def draw_drone(drone):
+
+    pos = Vector3(drone.current_hub.x * 3.0, 1.5, drone.current_hub.y * 3.0)
+    model = load_model('models/drone.glb')
+    draw_model_ex(model, pos, Vector3(0, 90, 0), 90, (1, 1, 1), WHITE)
+
+def draw_drones(monitor):
+
+    draw_drone(monitor.drones[0])
+
 
 def main() -> None:
     
     game_map = parse_input("map.txt")
-    
+
     if game_map is None:
         return
+
+    monitor = Monitor(game_map)
+    monitor.init_drones()
 
     screen_width = 1920
     screen_height = 1080
@@ -100,6 +88,7 @@ def main() -> None:
     )
 
     disable_cursor()
+    
     set_target_fps(60)
 
     while not window_should_close():
@@ -108,12 +97,16 @@ def main() -> None:
         if is_key_pressed(KeyboardKey.KEY_Z):
             camera.target = Vector3(0.0, 0.0, 0.0)
 
+        if is_key_pressed(KeyboardKey. KEY_G):
+            monitor.next_turn()
+
         begin_drawing()
         clear_background(RAYWHITE)
 
         begin_mode_3d(camera)
         draw_plane(Vector3(0.0, 0.0, 0.0), Vector2(500.0, 500.0), LIGHTGRAY)
         draw_map(game_map)
+        draw_drones(monitor)
         end_mode_3d()
 
         draw_text(
