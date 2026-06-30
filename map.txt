@@ -1,40 +1,13 @@
-nb_drones: 1
+nb_drones: 5
 
 start_hub: start 0 0 [color=green]
-hub: z1 1 0 [color=blue]
-hub: z2 2 0 [color=blue]
-hub: z3 1 1 [color=blue]
-hub: z4 0 2 [color=blue]
-hub: z5 1 2 [color=blue]
-hub: z6 2 2 [color=blue]
+hub: junction 1 0 [color=yellow max_drones=2]
+hub: path_a 2 1 [color=blue]
+hub: path_b 2 -1 [color=blue]
+end_hub: goal 3 0 [color=red max_drones=3 zone=restricted]
 
-hub: i1 3 0 [color=blue]
-hub: i2 3 1[color=blue]
-hub: i3 3 2 [color=blue]
-
-hub: m1 4 2
-hub: m2 4 1
-hub: m3 4 0
-hub: m4 5 1
-hub: m5 6 0 
-hub: m6 6 1
-hub: m7 6 2
-
-end_hub: end 7 7 
-
-connection: start-z1
-connection: z1-z2
-connection: z2-z3
-connection: z3-z4
-connection: z4-z5
-connection: z5-z6
-
-connection: i1-i2
-connection: i2-i3
-
-connection: m1-m2
-connection: m2-m3
-connection: m3-m4
-connection: m4-m5
-connection: m5-m6
-connection: m6-m7
+connection: start-junction [max_link_capacity=2]
+connection: junction-path_a
+connection: junction-path_b
+connection: path_a-goal
+connection: path_b-goal

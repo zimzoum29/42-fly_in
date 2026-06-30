@@ -1,25 +1,30 @@
+from __future__ import annotations
 from pyray import *
-from .models import Hub, Connection, Map
+from .models import Hub, Connection, Map, ModelManager
 from .parse import parse_input
 from .monitor import Monitor
+
 _COLOR_MAP: dict[str, tuple[int, int, int, int]] = {
-    "red":     (230,  41,  55, 255),
-    "green":   ( 0, 228,  48, 255),
-    "blue":    (  0, 121, 241, 255),
-    "yellow":  (253, 249,   0, 255),
-    "gray":    (130, 130, 130, 255),
-    "grey":    (130, 130, 130, 255),
-    "orange":  (255, 161,   0, 255),
-    "purple":  (200, 122, 255, 255),
-    "cyan":    (  0, 247, 247, 255),
-    "white":   (255, 255, 255, 255),
-    "black":   ( 0,   0,   0, 255),
+    "red":    (230,  41,  55, 255),
+    "green":  (  0, 228,  48, 255),
+    "blue":   (  0, 121, 241, 255),
+    "yellow": (253, 249,   0, 255),
+    "gray":   (130, 130, 130, 255),
+    "grey":   (130, 130, 130, 255),
+    "orange": (255, 161,   0, 255),
+    "purple": (200, 122, 255, 255),
+    "cyan":   (  0, 247, 247, 255),
+    "white":  (255, 255, 255, 255),
+    "black":  (  0,   0,   0, 255),
 }
 
-_DEFAULT_HUB_COLOR:  tuple[int, int, int, int] = (0, 121, 241, 255)
-_START_HUB_COLOR:    tuple[int, int, int, int] = (0, 228,  48, 255)
-_END_HUB_COLOR:      tuple[int, int, int, int] = (253, 249,  0, 255)
-_CONNECTION_COLOR:   tuple[int, int, int, int] = (130, 130, 130, 255)
+_DEFAULT_HUB_COLOR: tuple[int, int, int, int] = (0, 121, 241, 255)
+_START_HUB_COLOR:   tuple[int, int, int, int] = (0, 228,  48, 255)
+_END_HUB_COLOR:     tuple[int, int, int, int] = (253, 249,  0, 255)
+_CONNECTION_COLOR:  tuple[int, int, int, int] = (130, 130, 130, 255)
+
+_DRONE_MODEL_KEY = "drone"
+_DRONE_MODEL_PATH = "models/drone.glb"
 
 
 def _hub_color(hub: Hub) -> tuple[int, int, int, int]:
@@ -33,51 +38,49 @@ def _hub_color(hub: Hub) -> tuple[int, int, int, int]:
 
 
 def draw_connection(connection: Connection) -> None:
-
     p1 = Vector3(connection.hub1.x * 3.0, 0.5, connection.hub1.y * 3.0)
     p2 = Vector3(connection.hub2.x * 3.0, 0.5, connection.hub2.y * 3.0)
     draw_cylinder_ex(p1, p2, 0.1, 0.1, 8, _CONNECTION_COLOR)
 
 
 def draw_hub(hub: Hub) -> None:
-
     pos = Vector3(hub.x * 3.0, 0.5, hub.y * 3.0)
     draw_sphere(pos, 0.5, _hub_color(hub))
 
 
 def draw_map(game_map: Map) -> None:
-
     for connection in game_map.connections:
         draw_connection(connection)
-
     for hub in game_map.hubs:
         draw_hub(hub)
 
-def draw_drone(drone):
 
+def draw_drone(drone) -> None:
+
+    model = ModelManager.get(_DRONE_MODEL_KEY)
     pos = Vector3(drone.current_hub.x * 3.0, 1.5, drone.current_hub.y * 3.0)
-    model = load_model('models/drone.glb')
-    draw_model_ex(model, pos, Vector3(0, 90, 0), 90, (1, 1, 1), WHITE)
+    draw_model_ex(model, pos, Vector3(0.0, 1.0, 0.0), 90.0, Vector3(1.0, 1.0, 1.0), WHITE)
 
-def draw_drones(monitor):
 
-    draw_drone(monitor.drones[0])
+def draw_drones(monitor: Monitor) -> None:
+    for drone in monitor.drones:
+        if drone.is_arrived:
+            continue
+        draw_drone(drone)
 
 
 def main() -> None:
-    
     game_map = parse_input("map.txt")
-
     if game_map is None:
         return
 
     monitor = Monitor(game_map)
     monitor.init_drones()
 
-    screen_width = 1920
-    screen_height = 1080
+    set_trace_log_level(TraceLogLevel.LOG_ERROR)
+    init_window(1920, 1080, "Fly-in — drone router")
 
-    init_window(screen_width, screen_height, "Fly-in — drone router")
+    ModelManager.load(_DRONE_MODEL_KEY, _DRONE_MODEL_PATH)
 
     camera = Camera3D(
         Vector3(10.0, 10.0, 10.0),
@@ -88,7 +91,6 @@ def main() -> None:
     )
 
     disable_cursor()
-    
     set_target_fps(60)
 
     while not window_should_close():
@@ -97,8 +99,9 @@ def main() -> None:
         if is_key_pressed(KeyboardKey.KEY_Z):
             camera.target = Vector3(0.0, 0.0, 0.0)
 
-        if is_key_pressed(KeyboardKey. KEY_G):
-            monitor.next_turn()
+        if is_key_pressed(KeyboardKey.KEY_G):
+            if not monitor.all_arrived:
+                monitor.next_turn()
 
         begin_drawing()
         clear_background(RAYWHITE)
@@ -109,6 +112,9 @@ def main() -> None:
         draw_drones(monitor)
         end_mode_3d()
 
+        arrived = sum(1 for d in monitor.drones if d.is_arrived)
+        status = "DONE" if monitor.all_arrived else "RUNNING"
+
         draw_text(
             f"Drones: {game_map.nb_drones}  "
             f"Zones: {len(game_map.hubs)}  "
@@ -116,10 +122,15 @@ def main() -> None:
             10, 10, 20, (0, 0, 0, 255)
         )
         draw_text(
-            "[Z] Reset camera  |  WASD + Mouse: free cam",
-            10, 35, 18, (100, 100, 100, 255)
+            f"Turn: {monitor.turn}   Arrived: {arrived}/{len(monitor.drones)}   [{status}]",
+            10, 35, 20, (0, 100, 0, 255)
+        )
+        draw_text(
+            "[Z] Reset camera  |  [G] Next turn  |  WASD + Mouse: free cam",
+            10, 60, 18, (100, 100, 100, 255)
         )
 
         end_drawing()
 
+    ModelManager.unload_all()
     close_window()
