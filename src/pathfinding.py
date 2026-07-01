@@ -55,10 +55,7 @@ def find_path(game_map: Map, start: Hub, end: Hub) -> list[Hub]:
     return []
 
 
-def _rebuild_path(
-    came_from: dict[str, Optional[Hub]],
-    end: Hub
-) -> list[Hub]:
+def _rebuild_path(came_from: dict[str, Optional[Hub]], end: Hub) -> list[Hub]:
     path: list[Hub] = []
     current: Optional[Hub] = end
 

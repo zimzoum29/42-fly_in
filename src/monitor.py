@@ -13,11 +13,6 @@ class Monitor:
 
     def init_drones(self) -> None:
 
-        if self.map.start_hub is None:
-            raise ValueError("Cannot init drones: map has no start_hub")
-        if self.map.end_hub is None:
-            raise ValueError("Cannot init drones: map has no end_hub")
-
         path = find_path(self.map, self.map.start_hub, self.map.end_hub)
 
         for i in range(self.map.nb_drones):
