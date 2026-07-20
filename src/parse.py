@@ -8,7 +8,7 @@ _CONNECTION_METADATA_KEYS = {"max_link_capacity"}
 _VALID_ZONE_TYPES = {"normal", "blocked", "restricted", "priority"}
 
 
-def _parse_metadata(raw: str, allowed_keys: set[str], line_number: int) -> dict[str, str]:
+def parse_metadata(raw: str, allowed_keys: set[str], line_number: int) -> dict[str, str]:
 
     metadata: dict[str, str] = {}
 
@@ -36,7 +36,7 @@ def _parse_metadata(raw: str, allowed_keys: set[str], line_number: int) -> dict[
     return metadata
 
 
-def _parse_hub_line(param: str, is_start: bool, is_end: bool, game_map: Map, line_number: int) -> Hub:
+def parse_hub_line(param: str, is_start: bool, is_end: bool, game_map: Map, line_number: int) -> Hub:
 
     line = param.strip()
     metadata: dict[str, str] = {}
@@ -48,7 +48,7 @@ def _parse_hub_line(param: str, is_start: bool, is_end: bool, game_map: Map, lin
 
         line, metadata_raw = line.split("[", 1)
         metadata_raw = metadata_raw[:-1].strip()
-        metadata = _parse_metadata(metadata_raw, _HUB_METADATA_KEYS, line_number)
+        metadata = parse_metadata(metadata_raw, _HUB_METADATA_KEYS, line_number)
 
     parts = line.split()
 
@@ -108,7 +108,7 @@ def _parse_hub_line(param: str, is_start: bool, is_end: bool, game_map: Map, lin
     return hub
 
 
-def _parse_connection_line(param: str, game_map: Map, line_number: int) -> Connection:
+def parse_connection_line(param: str, game_map: Map, line_number: int) -> Connection:
 
     line = param.strip()
     metadata: dict[str, str] = {}
@@ -120,7 +120,7 @@ def _parse_connection_line(param: str, game_map: Map, line_number: int) -> Conne
 
         line, metadata_raw = line.split("[", 1)
         metadata_raw = metadata_raw[:-1].strip()
-        metadata = _parse_metadata(metadata_raw, _CONNECTION_METADATA_KEYS, line_number)
+        metadata = parse_metadata(metadata_raw, _CONNECTION_METADATA_KEYS, line_number)
 
     line = line.strip()
 
@@ -221,7 +221,7 @@ def parse_input(path: str) -> Optional[Map]:
                     if game_map.start_hub is not None:
                         raise ParsingError(f"Line {line_number}: Only one 'start_hub' is allowed")
 
-                    hub = _parse_hub_line(param, True, False, game_map, line_number)
+                    hub = parse_hub_line(param, True, False, game_map, line_number)
                     game_map.start_hub = hub
 
                 case "end_hub":
@@ -232,7 +232,7 @@ def parse_input(path: str) -> Optional[Map]:
                     if game_map.end_hub is not None:
                         raise ParsingError(f"Line {line_number}: Only one 'end_hub' is allowed")
 
-                    hub = _parse_hub_line(param, False, True, game_map, line_number)
+                    hub = parse_hub_line(param, False, True, game_map, line_number)
                     game_map.end_hub = hub
 
                 case "hub":
@@ -240,14 +240,14 @@ def parse_input(path: str) -> Optional[Map]:
                     if not nb_drones_seen:
                         raise ParsingError(f"Line {line_number}: 'nb_drones' must appear first")
 
-                    _parse_hub_line(param, False, False, game_map, line_number)
+                    parse_hub_line(param, False, False, game_map, line_number)
 
                 case "connection":
 
                     if not nb_drones_seen:
                         raise ParsingError(f"Line {line_number}: 'nb_drones' must appear first")
 
-                    _parse_connection_line(param, game_map, line_number)
+                    parse_connection_line(param, game_map, line_number)
 
                 case _:
 

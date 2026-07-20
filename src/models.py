@@ -105,7 +105,6 @@ class Map:
         return None
 
 
-
 class ModelManager:
 
     _models: dict[str, rl.Model] = {}

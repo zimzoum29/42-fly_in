@@ -1,5 +1,5 @@
 from .models import Drone, Hub, Map
-from .pathfinding import find_path
+from .pathfinding import (find_path, register_path, real_zone_cost, PathStep, State, LinkKey)
 
 
 class Monitor:
@@ -9,124 +9,85 @@ class Monitor:
         self.drones: list[Drone] = []
         self.turn: int = 0
         self.output_lines: list[str] = []
-
+        self._paths: list[list[PathStep]] = []
 
     def init_drones(self) -> None:
+        if self.map.start_hub is None:
+            raise ValueError("Map has no start_hub")
+        if self.map.end_hub is None:
+            raise ValueError("Map has no end_hub")
 
-        path = find_path(self.map, self.map.start_hub, self.map.end_hub)
+        start_name = self.map.start_hub.name
+
+        reservation: dict[State, int] = {}
+        link_reservation: dict[tuple[LinkKey, int], int] = {}
 
         for i in range(self.map.nb_drones):
             drone = Drone(i + 1, self.map.start_hub)
-            if path:
-                drone.assign_path(list(path))
+            steps = find_path(
+                self.map,
+                self.map.start_hub,
+                self.map.end_hub,
+                reservation,
+                link_reservation,
+            )
+            if steps:
+                register_path(steps, start_name, reservation, link_reservation)
+                self._paths.append(steps)
+            else:
+                self._paths.append([])
             self.drones.append(drone)
-
 
     @property
     def all_arrived(self) -> bool:
         return all(d.is_arrived for d in self.drones)
 
-    def _active_drones(self) -> list[Drone]:
-        return [d for d in self.drones if not d.is_arrived]
-
-    def _drones_staying_at(self, hub: Hub) -> int:
-        return sum(
-            1 for d in self.drones
-            if not d.is_arrived and d.current_hub is hub
-        )
-
-    def _hub_free_capacity(self, hub: Hub, claimed: list[Hub]) -> int:
-
-        if hub.is_start or hub.is_end:
-            return 10 ** 9
-
-        occupied = self._drones_staying_at(hub)
-        reserved = claimed.count(hub)
-        return max(0, hub.max_drones - occupied - reserved)
-
-    def _link_free_capacity(self, from_hub: Hub, to_hub: Hub, claimed_links: list[tuple[Hub, Hub]]) -> int:
-        
-        connection = self.map.get_connection(from_hub, to_hub)
-        if connection is None:
-            return 0
-
-        used = sum(
-            1 for f, t in claimed_links
-            if (f is from_hub and t is to_hub) or (f is to_hub and t is from_hub)
-        )
-        return max(0, connection.max_link_capacity - used)
-
-    def next_turn(self) -> None:
-
-        if self.all_arrived:
+    def run(self, max_turns: int = 1000) -> None:
+        if self.map.end_hub is None:
+            raise ValueError("Map has no end_hub")
+        if not self._paths:
             return
 
-        self.turn += 1
-        movements: list[str] = []
-        claimed_hubs: list[Hub] = []
-        claimed_links: list[tuple[Hub, Hub]] = []
+        last_turns = [
+            steps[-1][1] for steps in self._paths if steps
+        ]
+        if not last_turns:
+            return
+        total_turns = min(max(last_turns), max_turns)
 
-        active = self._active_drones()
+        turns: list[list[str]] = [[] for _ in range(total_turns)]
 
-        for drone in active:
-            if drone.state != "in_transit":
+        for drone_id, steps in enumerate(self._paths):
+            if not steps:
                 continue
+            pos = self.map.start_hub.name
+            pos_turn = 0
 
-            target = drone.transit_target
-            if target is None:
-                raise RuntimeError(
-                    f"Invariant broken: D{drone.index} is in_transit "
-                    f"but has no transit_target"
-                )
+            for hub, turn in steps:
+                if hub.name == pos:
+                    pos_turn = turn
+                    continue
 
-            if self._hub_free_capacity(target, claimed_hubs) > 0:
-                claimed_hubs.append(target)
-                drone.step_forward()
-                if not drone.is_arrived:
-                    drone.state = "moving"
-                drone.transit_target = None
-                movements.append(f"D{drone.index}-{target.name}")
+                if real_zone_cost(hub) == 2:
+                    turns[pos_turn].append(
+                        f"D{drone_id + 1}-{pos}-{hub.name}"
+                    )
 
-        moving = sorted((d for d in active if d.state == "moving"), key=lambda d: d.index)
+                pos = hub.name
+                pos_turn = turn
+                if turn - 1 < total_turns:
+                    turns[turn - 1].append(f"D{drone_id + 1}-{pos}")
 
-        for drone in moving:
-            target = drone.next_hub
-            if target is None:
-                drone.state = "arrived"
-                continue
+            self.drones[drone_id].state = "arrived"
+            if steps:
+                self.drones[drone_id].current_hub = steps[-1][0]
 
-            zone_ok = self._hub_free_capacity(target, claimed_hubs) > 0
-            link_ok = self._link_free_capacity(
-                drone.current_hub, target, claimed_links
-            ) > 0
+        for turn_list in turns:
+            line = " ".join(turn_list)
+            if line:
+                self.output_lines.append(line)
 
-            if not (zone_ok and link_ok):
-                continue
-
-            claimed_hubs.append(target)
-            claimed_links.append((drone.current_hub, target))
-
-            if target.zone == "restricted":
-                drone.state = "in_transit"
-                drone.transit_target = target
-                connection = self.map.get_connection(drone.current_hub, target)
-                label = (
-                    f"{drone.current_hub.name}-{target.name}"
-                    if connection is not None
-                    else target.name
-                )
-                movements.append(f"D{drone.index}-{label}")
-            else:
-                drone.step_forward()
-                movements.append(f"D{drone.index}-{target.name}")
-
-        if movements:
-            line = " ".join(movements)
-            self.output_lines.append(line)
-
-    def run(self, max_turns: int = 1000) -> None:
-        while not self.all_arrived and self.turn < max_turns:
-            self.next_turn()
+        self.turn = total_turns
 
     def print_output(self) -> None:
         for line in self.output_lines:
