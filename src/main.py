@@ -35,7 +35,7 @@ from .monitor import Monitor
 from .pathfinding import PathStep
 
 
-_COLOR_MAP: dict[str, tuple[int, int, int, int]] = {
+_COLOR_MAP = {
     "red":     (230,  41,  55, 255),
     "green":   (  0, 228,  48, 255),
     "blue":    (  0, 121, 241, 255),
@@ -54,30 +54,20 @@ _COLOR_MAP: dict[str, tuple[int, int, int, int]] = {
     "crimson": (220,  20,  60, 255),
 }
 
-_DEFAULT_COLOR: tuple[int, int, int, int] = (0, 121, 241, 255)
-_START_COLOR:   tuple[int, int, int, int] = (0, 228,  48, 255)
-_END_COLOR:     tuple[int, int, int, int] = (253, 249,  0, 255)
-_CONN_COLOR:    tuple[int, int, int, int] = (130, 130, 130, 255)
-
-_PROPELLER_MESHES: tuple[int, ...] = (112, 113, 114, 115)
-_PROPELLER_PIVOTS: tuple[tuple[float, float, float], ...] = (
-    (0.0,    1.6406, 0.0),
-    (0.0,    1.6406, 0.0),
-    (-2.125, 1.6406, 0.0),
-    (-2.125, 1.6406, 0.0),
-)
-_PROPELLER_SPEED: float = 20.0  # radians/second
+_DEFAULT_COLOR = (0, 121, 241, 255)
+_START_COLOR = (0, 228,  48, 255)
+_END_COLOR = (253, 249,  0, 255)
+_CONN_COLOR = (130, 130, 130, 255)
 
 _DRONE_MODEL_KEY  = "drone"
 _DRONE_MODEL_PATH = "models/drone.glb"
 
 _SCALE = 3.0
 
-def _hub_color(hub: Hub) -> tuple[int, int, int, int]:
-    """Resolve display colour for a hub."""
-    if hub.is_start:
+def hub_color(hub: Hub) -> tuple[int, int, int, int]:
+    if hub.is_start and hub.color is None:
         return _START_COLOR
-    if hub.is_end:
+    if hub.is_end and hub.color is None:
         return _END_COLOR
     if hub.color is not None:
         return _COLOR_MAP.get(hub.color.lower(), _DEFAULT_COLOR)
@@ -92,7 +82,7 @@ def draw_connection(connection: Connection) -> None:
 
 def draw_hub(hub: Hub) -> None:
     pos = Vector3(hub.x * _SCALE, 0.5, hub.y * _SCALE)
-    draw_sphere(pos, 0.5, _hub_color(hub))
+    draw_sphere(pos, 0.5, hub_color(hub))
 
 
 def draw_map(game_map: Map) -> None:
@@ -152,16 +142,10 @@ def main() -> None:
         return
 
     set_trace_log_level(TraceLogLevel.LOG_ERROR)
-    init_window(1920, 1080, "Fly-in — drone router")
+    init_window(1920, 1080, "Fly-in")
     ModelManager.load(_DRONE_MODEL_KEY, _DRONE_MODEL_PATH)
 
-    camera = Camera3D(
-        Vector3(10.0, 10.0, 10.0),
-        Vector3(0.0,  0.0,  0.0),
-        Vector3(0.0,  1.0,  0.0),
-        45.0,
-        CameraProjection.CAMERA_PERSPECTIVE,
-    )
+    camera = Camera3D(Vector3(10.0, 10.0, 10.0), Vector3(0.0,  0.0,  0.0), Vector3(0.0,  1.0,  0.0), 45.0, CameraProjection.CAMERA_PERSPECTIVE)
 
     disable_cursor()
     set_target_fps(60)
@@ -172,10 +156,10 @@ def main() -> None:
     while not window_should_close():
         update_camera(camera, CameraMode.CAMERA_FREE)
 
-        if is_key_pressed(KeyboardKey.KEY_RIGHT) or is_key_pressed(KeyboardKey.KEY_SPACE):
+        if is_key_pressed(KeyboardKey.KEY_G):
             if current_turn < total_turns:
                 current_turn += 1
-        if is_key_pressed(KeyboardKey.KEY_LEFT):
+        if is_key_pressed(KeyboardKey.KEY_F):
             if current_turn > 0:
                 current_turn -= 1
         if is_key_pressed(KeyboardKey.KEY_Z):
@@ -210,7 +194,7 @@ def main() -> None:
             (0, 100, 0, 255) if current_turn < total_turns else (180, 0, 0, 255),
         )
         draw_text(
-            "[←/→] Step turns  |  [Z] Reset camera  |  WASD + Mouse: free cam",
+            "[G/F] Step turns  |  [Z] Reset camera  |  WASD + Mouse: free cam",
             10, 65, 18, (100, 100, 100, 255),
         )
 
