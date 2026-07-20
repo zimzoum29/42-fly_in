@@ -18,6 +18,7 @@ from pyray import (
     init_window,
     is_key_pressed,
     KeyboardKey,
+    get_frame_time,
     LIGHTGRAY,
     RAYWHITE,
     set_target_fps,
@@ -74,6 +75,49 @@ def hub_color(hub: Hub) -> tuple[int, int, int, int]:
     return _DEFAULT_COLOR
 
 
+def _lerp(a: float, b: float, t: float) -> float:
+    return a + (b - a) * t
+
+
+def _hub_pos(hub: Hub) -> Vector3:
+    return Vector3(hub.x * _SCALE, 1.5, hub.y * _SCALE)
+
+
+def drone_position(
+    steps: list[PathStep], start_hub: Hub, turn: float
+) -> Vector3:
+    prev_hub, prev_turn = start_hub, 0.0
+    for step_hub, step_turn in steps:
+        if step_turn <= turn:
+            prev_hub, prev_turn = step_hub, float(step_turn)
+            continue
+        span = step_turn - prev_turn
+        t = (turn - prev_turn) / span if span > 0 else 1.0
+        p0, p1 = _hub_pos(prev_hub), _hub_pos(step_hub)
+        return Vector3(
+            _lerp(p0.x, p1.x, t),
+            _lerp(p0.y, p1.y, t),
+            _lerp(p0.z, p1.z, t),
+        )
+    return _hub_pos(prev_hub)
+
+
+def draw_drone_at(pos: Vector3) -> None:
+    model = ModelManager.get(_DRONE_MODEL_KEY)
+    draw_model_ex(
+        model, pos,
+        Vector3(0.0, 1.0, 0.0), -90.0,
+        Vector3(1.0, 1.0, 1.0), WHITE,
+    )
+
+
+def draw_drones_at_turn(paths: list[list[PathStep]], start_hub: Hub, turn: float) -> None:
+    for steps in paths:
+        if not steps:
+            continue
+        draw_drone_at(drone_position(steps, start_hub, turn))
+
+
 def draw_connection(connection: Connection) -> None:
     p1 = Vector3(connection.hub1.x * _SCALE, 0.5, connection.hub1.y * _SCALE)
     p2 = Vector3(connection.hub2.x * _SCALE, 0.5, connection.hub2.y * _SCALE)
@@ -109,21 +153,6 @@ def draw_drone(hub: Hub) -> None:
     )
 
 
-def draw_drones_at_turn(paths: list[list[PathStep]], start_hub: Hub, current_turn: int) -> None:
-
-    for steps in paths:
-        if not steps:
-            continue
-
-        hub = start_hub
-        for step_hub, step_turn in steps:
-            if step_turn <= current_turn:
-                hub = step_hub
-            else:
-                break
-
-        draw_drone(hub)
-
 
 def main() -> None:
 
@@ -150,20 +179,28 @@ def main() -> None:
     disable_cursor()
     set_target_fps(60)
 
-    current_turn: int = 0
-    total_turns: int  = monitor.turn
+    current_turn: float = 0.0
+    target_turn: int = 0
+    total_turns: int = monitor.turn
+    ANIM_SPEED = 2.0
 
     while not window_should_close():
         update_camera(camera, CameraMode.CAMERA_FREE)
 
-        if is_key_pressed(KeyboardKey.KEY_G):
-            if current_turn < total_turns:
-                current_turn += 1
-        if is_key_pressed(KeyboardKey.KEY_F):
-            if current_turn > 0:
-                current_turn -= 1
+        if is_key_pressed(KeyboardKey.KEY_G) and target_turn < total_turns:
+            target_turn += 1
+        if is_key_pressed(KeyboardKey.KEY_F) and target_turn > 0:
+            target_turn -= 1
         if is_key_pressed(KeyboardKey.KEY_Z):
             camera.target = Vector3(0.0, 0.0, 0.0)
+
+        dt = get_frame_time()
+        if current_turn < target_turn:
+            current_turn = min(target_turn, current_turn + ANIM_SPEED * dt)
+        elif current_turn > target_turn:
+            current_turn = max(target_turn, current_turn - ANIM_SPEED * dt)
+
+        
 
         begin_drawing()
         clear_background(RAYWHITE)
@@ -175,11 +212,7 @@ def main() -> None:
             LIGHTGRAY,
         )
         draw_map(game_map)
-        draw_drones_at_turn(
-            monitor._paths,
-            game_map.start_hub,
-            current_turn,
-        )
+        draw_drones_at_turn(monitor._paths, game_map.start_hub, current_turn)
         end_mode_3d()
 
         draw_text(
@@ -189,7 +222,7 @@ def main() -> None:
             10, 10, 20, (0, 0, 0, 255),
         )
         draw_text(
-            f"Turn: {current_turn} / {total_turns}",
+            f"Turn: {int(current_turn)} / {total_turns}",
             10, 35, 24,
             (0, 100, 0, 255) if current_turn < total_turns else (180, 0, 0, 255),
         )
