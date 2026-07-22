@@ -1,4 +1,3 @@
-from __future__ import annotations
 from pyray import (
     begin_drawing,
     begin_mode_3d,
@@ -30,136 +29,21 @@ from pyray import (
     WHITE,
     window_should_close,
 )
-from .models import Hub, Connection, Map, ModelManager
+from .models import ModelManager
 from .parse import parse_input
 from .monitor import Monitor
-from .pathfinding import PathStep
+from .graphic import Graphic
 
-
-_COLOR_MAP = {
-    "red":     (230,  41,  55, 255),
-    "green":   (  0, 228,  48, 255),
-    "blue":    (  0, 121, 241, 255),
-    "yellow":  (253, 249,   0, 255),
-    "gray":    (130, 130, 130, 255),
-    "grey":    (130, 130, 130, 255),
-    "orange":  (255, 161,   0, 255),
-    "purple":  (200, 122, 255, 255),
-    "cyan":    (  0, 247, 247, 255),
-    "white":   (255, 255, 255, 255),
-    "black":   ( 20,  20,  20, 255),
-    "maroon":  (112,  31,  22, 255),
-    "brown":   (127,  95,   0, 255),
-    "gold":    (255, 203,   0, 255),
-    "violet":  (135,  60, 190, 255),
-    "crimson": (220,  20,  60, 255),
-}
-
-_DEFAULT_COLOR = (0, 121, 241, 255)
-_START_COLOR = (0, 228,  48, 255)
-_END_COLOR = (253, 249,  0, 255)
-_CONN_COLOR = (130, 130, 130, 255)
-
-_DRONE_MODEL_KEY  = "drone"
 _DRONE_MODEL_PATH = "models/drone.glb"
-
-_SCALE = 3.0
-
-def hub_color(hub: Hub) -> tuple[int, int, int, int]:
-    if hub.is_start and hub.color is None:
-        return _START_COLOR
-    if hub.is_end and hub.color is None:
-        return _END_COLOR
-    if hub.color is not None:
-        return _COLOR_MAP.get(hub.color.lower(), _DEFAULT_COLOR)
-    return _DEFAULT_COLOR
-
-
-def _lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
-
-
-def _hub_pos(hub: Hub) -> Vector3:
-    return Vector3(hub.x * _SCALE, 1.5, hub.y * _SCALE)
-
-
-def drone_position(
-    steps: list[PathStep], start_hub: Hub, turn: float
-) -> Vector3:
-    prev_hub, prev_turn = start_hub, 0.0
-    for step_hub, step_turn in steps:
-        if step_turn <= turn:
-            prev_hub, prev_turn = step_hub, float(step_turn)
-            continue
-        span = step_turn - prev_turn
-        t = (turn - prev_turn) / span if span > 0 else 1.0
-        p0, p1 = _hub_pos(prev_hub), _hub_pos(step_hub)
-        return Vector3(
-            _lerp(p0.x, p1.x, t),
-            _lerp(p0.y, p1.y, t),
-            _lerp(p0.z, p1.z, t),
-        )
-    return _hub_pos(prev_hub)
-
-
-def draw_drone_at(pos: Vector3) -> None:
-    model = ModelManager.get(_DRONE_MODEL_KEY)
-    draw_model_ex(
-        model, pos,
-        Vector3(0.0, 1.0, 0.0), -90.0,
-        Vector3(1.0, 1.0, 1.0), WHITE,
-    )
-
-
-def draw_drones_at_turn(paths: list[list[PathStep]], start_hub: Hub, turn: float) -> None:
-    for steps in paths:
-        if not steps:
-            continue
-        draw_drone_at(drone_position(steps, start_hub, turn))
-
-
-def draw_connection(connection: Connection) -> None:
-    p1 = Vector3(connection.hub1.x * _SCALE, 0.5, connection.hub1.y * _SCALE)
-    p2 = Vector3(connection.hub2.x * _SCALE, 0.5, connection.hub2.y * _SCALE)
-    draw_cylinder_ex(p1, p2, 0.1, 0.1, 8, _CONN_COLOR)
-
-
-def draw_hub(hub: Hub) -> None:
-    pos = Vector3(hub.x * _SCALE, 0.5, hub.y * _SCALE)
-    draw_sphere(pos, 0.5, hub_color(hub))
-
-
-def draw_map(game_map: Map) -> None:
-    for connection in game_map.connections:
-        draw_connection(connection)
-    for hub in game_map.hubs:
-        draw_hub(hub)
-
-
-def draw_drone(hub: Hub) -> None:
-
-    model = ModelManager.get(_DRONE_MODEL_KEY)
-    wx = hub.x * _SCALE
-    wy = 1.5
-    wz = hub.y * _SCALE
-
-    draw_model_ex(
-        model,
-        Vector3(wx, wy, wz),
-        Vector3(0.0, 1.0, 0.0),
-        -90.0,
-        Vector3(1.0, 1.0, 1.0),
-        WHITE,
-    )
-
-
+_DRONE_MODEL_KEY  = "drone"
 
 def main() -> None:
 
-    game_map = parse_input("map.txt")
+    game_map = parse_input("map1.txt")
     if game_map is None:
         return
 
+    graphic = Graphic()
     monitor = Monitor(game_map)
     monitor.init_drones()
     monitor.run()
@@ -185,6 +69,7 @@ def main() -> None:
     ANIM_SPEED = 2.0
 
     while not window_should_close():
+        
         update_camera(camera, CameraMode.CAMERA_FREE)
 
         if is_key_pressed(KeyboardKey.KEY_G) and target_turn < total_turns:
@@ -200,36 +85,19 @@ def main() -> None:
         elif current_turn > target_turn:
             current_turn = max(target_turn, current_turn - ANIM_SPEED * dt)
 
-        
 
         begin_drawing()
         clear_background(RAYWHITE)
 
         begin_mode_3d(camera)
-        draw_plane(
-            Vector3(0.0, 0.0, 0.0),
-            Vector2(500.0, 500.0),
-            LIGHTGRAY,
-        )
-        draw_map(game_map)
-        draw_drones_at_turn(monitor._paths, game_map.start_hub, current_turn)
+        draw_plane(Vector3(0.0, 0.0, 0.0), Vector2(500.0, 500.0), LIGHTGRAY)
+        graphic.draw_map(game_map)
+        graphic.draw_drones_at_turn(monitor._paths, game_map.start_hub, current_turn)
         end_mode_3d()
 
-        draw_text(
-            f"Drones: {game_map.nb_drones}  "
-            f"Zones: {len(game_map.hubs)}  "
-            f"Connections: {len(game_map.connections)}",
-            10, 10, 20, (0, 0, 0, 255),
-        )
-        draw_text(
-            f"Turn: {int(current_turn)} / {total_turns}",
-            10, 35, 24,
-            (0, 100, 0, 255) if current_turn < total_turns else (180, 0, 0, 255),
-        )
-        draw_text(
-            "[G/F] Step turns  |  [Z] Reset camera  |  WASD + Mouse: free cam",
-            10, 65, 18, (100, 100, 100, 255),
-        )
+        draw_text(f"Drones: {game_map.nb_drones}  " f"Zones: {len(game_map.hubs)}  " f"Connections: {len(game_map.connections)}", 10, 10, 20, (0, 0, 0, 255))
+        draw_text(f"Turn: {int(current_turn)} / {total_turns}", 10, 35, 24,(0, 100, 0, 255) if current_turn < total_turns else (180, 0, 0, 255))
+        draw_text("[G/F] Step turns  |  [Z] Reset camera  |  WASD + Mouse: free cam", 10, 65, 18, (100, 100, 100, 255))
 
         end_drawing()
 

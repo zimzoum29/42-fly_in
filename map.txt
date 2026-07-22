@@ -1,189 +1,422 @@
-# CHALLENGER LEVEL: THE IMPOSSIBLE DREAM
-# WARNING: This map is designed to be extremely challenging and may not be solvable
-# by most algorithms. It's intended as a stress test and research challenge.
-# The goal is NOT to validate this map but to push algorithmic limits.
+nb_drones: 3
 
-nb_drones: 25
+start_hub: node_1 -2 -1 [color=white]
+hub: node_2 -1 -1 [color=white]
+hub: node_3 0 -1 [color=white]
+hub: node_4 1 -1 [color=white]
+hub: node_5 2 -1 [color=white]
+hub: node_6 3 -1 [color=white]
+hub: node_7 4 -1 [color=white]
+hub: node_8 5 -1 [color=white]
+hub: node_9 6 -1 [color=white]
+hub: node_a 7 -1 [color=white]
+hub: node_b 7 0 [color=white]
+hub: node_c 6 0 [color=white]
+hub: node_d 5 0 [color=white]
+hub: node_e 4 0 [color=white]
+hub: node_f 3 0 [color=white]
+hub: node_10 2 0 [color=white]
+hub: node_11 1 0 [color=white]
+hub: node_12 0 0 [color=white]
+hub: node_13 -1 0 [color=white]
+hub: node_14 -2 0 [color=white]
+hub: node_15 -2 1 [color=white]
+hub: node_16 -1 1 [color=white]
+hub: node_17 0 1 [color=white]
+hub: node_18 1 1 [color=white]
+hub: node_19 2 1 [color=white]
+hub: node_1a 3 1 [color=white]
+hub: node_1b 4 1 [color=white]
+hub: node_1c 5 1 [color=white]
+hub: node_1d 6 1 [color=white]
+hub: node_1e 7 1 [color=white]
+hub: node_1f 7 2 [color=white]
+hub: node_20 6 2 [color=white]
+hub: node_21 5 2 [color=white]
+hub: node_22 4 2 [color=white]
+hub: node_23 3 2 [color=white]
+hub: node_24 2 2 [color=white]
+hub: node_25 1 2 [color=white]
+hub: node_26 0 2 [color=white]
+hub: node_27 -1 2 [color=white]
+hub: node_28 -2 2 [color=white]
+hub: node_29 -2 3 [color=white]
+hub: node_2a -1 3 [color=white]
+hub: node_2b 0 3 [color=white]
+hub: node_2c 1 3 [color=white]
+hub: node_2d 2 3 [color=white]
+hub: node_2e 3 3 [color=white]
+hub: node_2f 4 3 [color=white]
+hub: node_30 5 3 [color=white]
+hub: node_31 6 3 [color=white]
+hub: node_32 7 3 [color=white]
+hub: node_33 7 4 [color=white]
+hub: node_34 6 4 [color=white]
+hub: node_35 5 4 [color=white]
+hub: node_36 3 4 [color=white]
+hub: node_37 4 4 [color=white]
+hub: node_38 2 4 [color=white]
+hub: node_39 1 4 [color=white]
+hub: node_3a 0 4 [color=white]
+hub: node_3b -1 4 [color=white]
+hub: node_3c -2 4 [color=white]
+hub: node_3d -2 5 [color=white]
+hub: node_3e -1 5 [color=white]
+hub: node_3f 0 5 [color=white]
+hub: node_40 1 5 [color=white]
+hub: node_41 3 5 [color=white]
+hub: node_42 2 5 [color=white]
+hub: node_43 4 5 [color=white]
+hub: node_44 5 5 [color=white]
+hub: node_45 6 5 [color=white]
+hub: node_46 7 5 [color=white]
+hub: node_47 7 6 [color=white]
+hub: node_48 6 6 [color=white]
+hub: node_49 5 6 [color=white]
+hub: node_4a 4 6 [color=white]
+hub: node_4b 3 6 [color=white]
+hub: node_4c 2 6 [color=white]
+hub: node_4d 1 6 [color=white]
+hub: node_4e 0 6 [color=white]
+hub: node_4f -1 6 [color=white]
+hub: node_50 -2 6 [color=white]
+hub: node_51 -2 7 [color=white]
+hub: node_52 -1 7 [color=white]
+hub: node_53 0 7 [color=white]
+hub: node_54 1 7 [color=white]
+hub: node_55 2 7 [color=white]
+hub: node_56 3 7 [color=white]
+hub: node_57 4 7 [color=white]
+hub: node_58 5 7 [color=white]
+hub: node_59 6 7 [color=white]
+hub: node_5a 7 7 [color=white]
+hub: node_5b 7 8 [color=white]
+hub: node_5c 6 8 [color=white]
+hub: node_5d 5 8 [color=white]
+hub: node_5e 4 8 [color=white]
+hub: node_5f 3 8 [color=white]
+hub: node_60 2 8 [color=white]
+hub: node_61 1 8 [color=white]
+hub: node_62 0 8 [color=white]
+hub: node_63 -1 8 [color=white]
+hub: node_64 -2 8 [color=white]
+hub: node_65 -2 9 [color=white]
+hub: node_66 -1 9 [color=white]
+hub: node_67 0 9 [color=white]
+hub: node_68 1 9 [color=white]
+hub: node_69 2 9 [color=white]
+hub: node_6a 3 9 [color=white]
+hub: node_6b 4 9 [color=white]
+hub: node_6c 5 9 [color=white]
+hub: node_6d 6 9 [color=white]
+hub: node_6e 7 9 [color=white]
+hub: node_6f -2 10 [color=white]
+hub: node_70 -2 11 [color=white]
+hub: node_71 -2 12 [color=white]
+hub: node_72 -2 13 [color=white]
+hub: node_73 -2 14 [color=white]
+hub: node_74 -2 15 [color=white]
+hub: node_75 -2 16 [color=white]
+hub: node_76 -2 17 [color=white]
+end_hub: node_77 -2 18 [color=white]
+hub: node_78 -1 18 [color=white]
+hub: node_79 0 18 [color=white]
+hub: node_7a 1 18 [color=white]
+hub: node_7b 2 18 [color=white]
+hub: node_7c 3 18 [color=white]
+hub: node_7d 4 18 [color=white]
+hub: node_7e 5 18 [color=white]
+hub: node_7f 6 18 [color=white]
+hub: node_80 7 18 [color=white]
+hub: node_81 8 18 [color=white]
+hub: node_82 8 17 [color=white]
+hub: node_83 8 16 [color=white]
+hub: node_84 8 15 [color=white]
+hub: node_85 8 14 [color=white]
+hub: node_86 8 13 [color=white]
+hub: node_87 8 11 [color=white]
+hub: node_88 8 12 [color=white]
+hub: node_89 8 10 [color=white]
+hub: node_8a 8 9 [color=white]
+hub: node_8b 7 10 [color=white]
+hub: node_8c 6 10 [color=white]
+hub: node_8d 5 10 [color=white]
+hub: node_8e 4 10 [color=white]
+hub: node_8f 3 10 [color=white]
+hub: node_90 2 10 [color=white]
+hub: node_91 1 10 [color=white]
+hub: node_92 0 10 [color=white]
+hub: node_93 -1 10 [color=white]
+hub: node_94 -1 11 [color=white]
+hub: node_95 1 11 [color=white]
+hub: node_96 2 11 [color=white]
+hub: node_97 0 11 [color=white]
+hub: node_98 3 11 [color=white]
+hub: node_99 4 11 [color=white]
+hub: node_9a 5 11 [color=white]
+hub: node_9b 6 11 [color=white]
+hub: node_9c 7 11 [color=white]
+hub: node_9d 7 12 [color=white]
+hub: node_9e 6 12 [color=white]
+hub: node_9f 5 12 [color=white]
+hub: node_a0 4 12 [color=white]
+hub: node_a1 3 12 [color=white]
+hub: node_a2 2 12 [color=white]
+hub: node_a3 1 12 [color=white]
+hub: node_a4 0 12 [color=white]
+hub: node_a5 -1 12 [color=white]
+hub: node_a6 -1 13 [color=white]
+hub: node_a7 -1 14 [color=white]
+hub: node_a8 0 14 [color=white]
+hub: node_a9 0 13 [color=white]
+hub: node_aa 1 13 [color=white]
+hub: node_ab 1 14 [color=white]
+hub: node_ac 2 14 [color=white]
+hub: node_ad 2 13 [color=white]
+hub: node_ae 3 13 [color=white]
+hub: node_af 3 14 [color=white]
+hub: node_b0 4 14 [color=white]
+hub: node_b1 4 13 [color=white]
+hub: node_b2 5 13 [color=white]
+hub: node_b3 5 14 [color=white]
+hub: node_b4 6 14 [color=white]
+hub: node_b5 7 14 [color=white]
+hub: node_b6 7 13 [color=white]
+hub: node_b7 6 13 [color=white]
+hub: node_b8 6 15 [color=white]
+hub: node_b9 7 15 [color=white]
+hub: node_ba 7 16 [color=white]
+hub: node_bb 7 17 [color=white]
+hub: node_bc 6 17 [color=white]
+hub: node_bd 6 16 [color=white]
+hub: node_be 5 16 [color=white]
+hub: node_bf 5 15 [color=white]
+hub: node_c0 5 17 [color=white]
+hub: node_c1 4 17 [color=white]
+hub: node_c2 4 16 [color=white]
+hub: node_c3 4 15 [color=white]
+hub: node_c4 3 15 [color=white]
+hub: node_c5 3 16 [color=white]
+hub: node_c6 3 17 [color=white]
+hub: node_c7 2 17 [color=white]
+hub: node_c8 2 16 [color=white]
+hub: node_c9 2 15 [color=white]
+hub: node_ca 1 15 [color=white]
+hub: node_cb 1 16 [color=white]
+hub: node_cc 1 17 [color=white]
+hub: node_cd 0 17 [color=white]
+hub: node_ce 0 16 [color=white]
+hub: node_cf 0 15 [color=white]
+hub: node_d0 -1 15 [color=white]
+hub: node_d1 -1 16 [color=white]
+hub: node_d2 -1 17 [color=white]
 
-# === LAYER 0: The Nightmare Begins ===
-start_hub: start 0 0 [color=green]
-
-# Single-file entry gates (extreme bottleneck)
-hub: gate_hell1 2 0 [color=red max_drones=1]
-hub: gate_hell2 3 0 [color=red max_drones=1]
-hub: gate_hell3 4 0 [color=red max_drones=1]
-hub: gate_hell4 5 0 [color=red max_drones=1]
-hub: gate_hell5 6 0 [color=red max_drones=1]
-
-# === LAYER 1: The Maze of Despair ===
-# Multiple interconnected dead ends and loops
-hub: maze_trap_a1 2 1 [color=purple]
-hub: maze_trap_a2 3 1 [color=purple]
-hub: maze_trap_a3 4 1 [color=purple]
-hub: maze_dead_a 5 1 [color=black]
-
-hub: maze_trap_b1 2 -1 [color=purple]
-hub: maze_trap_b2 3 -1 [color=purple]
-hub: maze_trap_b3 4 -1 [color=purple]
-hub: maze_dead_b 5 -1 [color=black]
-
-hub: maze_loop1 2 2 [zone=restricted color=brown]
-hub: maze_loop2 3 2 [zone=restricted color=brown]
-hub: maze_loop3 4 2 [zone=restricted color=brown]
-hub: maze_loop4 5 2 [zone=restricted color=brown]
-hub: maze_loop5 6 2 [zone=restricted color=brown]
-hub: maze_loop6 6 1 [zone=restricted color=brown]
-
-# === LAYER 2: The Capacity Nightmare ===
-hub: micro_gate1 7 0 [color=orange max_drones=1]
-hub: micro_gate2 8 0 [color=orange max_drones=1]
-hub: micro_gate3 9 0 [color=orange max_drones=1]
-
-# Overflow areas with terrible costs
-hub: overflow_hell1 7 1 [zone=restricted color=maroon max_drones=2]
-hub: overflow_hell2 8 1 [zone=restricted color=maroon max_drones=2]
-hub: overflow_hell3 9 1 [zone=restricted color=maroon max_drones=2]
-hub: overflow_hell4 7 -1 [zone=restricted color=maroon max_drones=2]
-hub: overflow_hell5 8 -1 [zone=restricted color=maroon max_drones=2]
-hub: overflow_hell6 9 -1 [zone=restricted color=maroon max_drones=2]
-
-# === LAYER 3: The False Hope Section ===
-# Priority zones that lead to more traps
-hub: false_hope1 10 0 [zone=priority color=gold max_drones=3]
-hub: false_hope2 11 0 [zone=priority color=gold max_drones=2]
-hub: false_hope3 12 0 [zone=priority color=gold max_drones=1]
-
-# More dead ends disguised as good paths
-hub: priority_trap1 10 1 [zone=priority color=gold]
-hub: priority_trap2 11 1 [zone=priority color=gold]
-hub: priority_dead 12 1 [color=black]
-
-hub: priority_trap3 10 -1 [zone=priority color=gold]
-hub: priority_trap4 11 -1 [zone=priority color=gold]
-hub: priority_dead2 12 -1 [color=black]
-
-# === LAYER 4: The Convergence Hell ===
-# Multiple restricted paths that must merge
-hub: conv_restricted1 13 2 [zone=restricted color=darkred max_drones=1]
-hub: conv_restricted2 14 2 [zone=restricted color=darkred max_drones=1]
-hub: conv_restricted3 15 2 [zone=restricted color=darkred max_drones=1]
-
-hub: conv_restricted4 13 0 [zone=restricted color=darkred max_drones=1]
-hub: conv_restricted5 14 0 [zone=restricted color=darkred max_drones=1]
-hub: conv_restricted6 15 0 [zone=restricted color=darkred max_drones=1]
-
-hub: conv_restricted7 13 -2 [zone=restricted color=darkred max_drones=1]
-hub: conv_restricted8 14 -2 [zone=restricted color=darkred max_drones=1]
-hub: conv_restricted9 15 -2 [zone=restricted color=darkred max_drones=1]
-
-# === LAYER 5: The Final Gauntlet of Doom ===
-hub: final_merge 16 0 [color=violet max_drones=5]
-hub: final_torture1 17 0 [color=crimson max_drones=2]
-hub: final_torture2 18 0 [color=crimson max_drones=1]
-hub: final_torture3 19 0 [color=crimson max_drones=1]
-hub: final_torture4 20 0 [color=crimson max_drones=1]
-hub: final_torture5 21 0 [color=crimson max_drones=1]
-
-# The ultimate goal
-end_hub: impossible_goal 23 0 [color=rainbow]
-
-# === CONNECTIONS: The Web of Suffering ===
-
-# Layer 0 connections (bottleneck hell)
-connection: start-gate_hell1 [max_link_capacity=1]
-connection: gate_hell1-gate_hell2 [max_link_capacity=1]
-connection: gate_hell2-gate_hell3 [max_link_capacity=1]
-connection: gate_hell3-gate_hell4 [max_link_capacity=1]
-connection: gate_hell4-gate_hell5 [max_link_capacity=1]
-
-# Layer 1 connections (maze of despair)
-connection: gate_hell1-maze_trap_a1
-connection: gate_hell2-maze_trap_b1
-connection: gate_hell3-maze_loop1
-
-connection: maze_trap_a1-maze_trap_a2
-connection: maze_trap_a2-maze_trap_a3
-connection: maze_trap_a3-maze_dead_a
-
-connection: maze_trap_b1-maze_trap_b2
-connection: maze_trap_b2-maze_trap_b3
-connection: maze_trap_b3-maze_dead_b
-
-connection: maze_loop1-maze_loop2
-connection: maze_loop2-maze_loop3
-connection: maze_loop3-maze_loop4
-connection: maze_loop4-maze_loop5
-connection: maze_loop5-maze_loop6
-connection: maze_loop6-maze_loop1
-
-# Escape routes from maze (very limited)
-connection: maze_trap_a2-micro_gate1
-connection: maze_trap_b2-micro_gate1
-connection: maze_loop3-micro_gate2
-
-# Layer 2 connections (capacity nightmare)
-connection: gate_hell5-micro_gate1
-connection: micro_gate1-micro_gate2
-connection: micro_gate2-micro_gate3
-
-# Overflow hell connections
-connection: micro_gate1-overflow_hell1
-connection: micro_gate2-overflow_hell2
-connection: micro_gate3-overflow_hell3
-connection: micro_gate1-overflow_hell4
-connection: micro_gate2-overflow_hell5
-connection: micro_gate3-overflow_hell6
-
-connection: overflow_hell1-overflow_hell2
-connection: overflow_hell2-overflow_hell3
-connection: overflow_hell4-overflow_hell5
-connection: overflow_hell5-overflow_hell6
-
-connection: overflow_hell3-false_hope1
-connection: overflow_hell6-false_hope1
-
-# Layer 3 connections (false hope)
-connection: micro_gate3-false_hope1
-connection: false_hope1-false_hope2
-connection: false_hope2-false_hope3
-
-# False hope traps
-connection: false_hope1-priority_trap1
-connection: false_hope2-priority_trap2
-connection: false_hope3-priority_dead
-
-connection: false_hope1-priority_trap3
-connection: false_hope2-priority_trap4
-connection: false_hope3-priority_dead2
-
-connection: priority_trap1-priority_trap2
-connection: priority_trap3-priority_trap4
-
-# Layer 4 connections (convergence hell)
-connection: false_hope3-conv_restricted1
-connection: false_hope3-conv_restricted4
-connection: false_hope3-conv_restricted7
-
-connection: conv_restricted1-conv_restricted2
-connection: conv_restricted2-conv_restricted3
-connection: conv_restricted4-conv_restricted5
-connection: conv_restricted5-conv_restricted6
-connection: conv_restricted7-conv_restricted8
-connection: conv_restricted8-conv_restricted9
-
-connection: conv_restricted3-final_merge
-connection: conv_restricted6-final_merge
-connection: conv_restricted9-final_merge
-
-# Layer 5 connections (final gauntlet)
-connection: final_merge-final_torture1
-connection: final_torture1-final_torture2
-connection: final_torture2-final_torture3
-connection: final_torture3-final_torture4
-connection: final_torture4-final_torture5
-connection: final_torture5-impossible_goal
-
-# Emergency bypass routes (extremely expensive)
-connection: overflow_hell1-conv_restricted1
-connection: overflow_hell4-conv_restricted7
-connection: priority_trap1-conv_restricted4
+connection: node_1-node_2
+connection: node_2-node_3
+connection: node_3-node_4
+connection: node_5-node_4
+connection: node_5-node_6
+connection: node_6-node_7
+connection: node_7-node_8
+connection: node_8-node_9
+connection: node_9-node_a
+connection: node_b-node_c
+connection: node_b-node_d
+connection: node_d-node_e
+connection: node_e-node_f
+connection: node_11-node_10
+connection: node_10-node_f
+connection: node_11-node_12
+connection: node_12-node_13
+connection: node_14-node_13
+connection: node_15-node_14
+connection: node_15-node_16
+connection: node_16-node_17
+connection: node_17-node_18
+connection: node_18-node_19
+connection: node_19-node_1a
+connection: node_1a-node_1b
+connection: node_1b-node_1c
+connection: node_1c-node_1d
+connection: node_1d-node_1e
+connection: node_1e-node_1f
+connection: node_1f-node_20
+connection: node_20-node_21
+connection: node_21-node_22
+connection: node_22-node_23
+connection: node_23-node_24
+connection: node_24-node_25
+connection: node_25-node_26
+connection: node_26-node_27
+connection: node_27-node_28
+connection: node_28-node_29
+connection: node_29-node_2a
+connection: node_2a-node_2b
+connection: node_2b-node_2c
+connection: node_2c-node_2d
+connection: node_2d-node_2e
+connection: node_2e-node_2f
+connection: node_2f-node_30
+connection: node_30-node_31
+connection: node_31-node_32
+connection: node_32-node_33
+connection: node_33-node_34
+connection: node_34-node_35
+connection: node_35-node_37
+connection: node_37-node_36
+connection: node_36-node_38
+connection: node_38-node_39
+connection: node_39-node_3a
+connection: node_3a-node_3b
+connection: node_3b-node_3c
+connection: node_3d-node_3c
+connection: node_3d-node_3e
+connection: node_3e-node_3f
+connection: node_3f-node_40
+connection: node_40-node_42
+connection: node_42-node_41
+connection: node_41-node_43
+connection: node_43-node_44
+connection: node_44-node_45
+connection: node_45-node_46
+connection: node_46-node_47
+connection: node_47-node_48
+connection: node_48-node_49
+connection: node_49-node_4a
+connection: node_4a-node_4b
+connection: node_4b-node_4c
+connection: node_4c-node_4d
+connection: node_4d-node_4e
+connection: node_4e-node_4f
+connection: node_4f-node_50
+connection: node_50-node_51
+connection: node_51-node_52
+connection: node_52-node_53
+connection: node_53-node_54
+connection: node_54-node_55
+connection: node_55-node_56
+connection: node_56-node_57
+connection: node_57-node_58
+connection: node_58-node_59
+connection: node_59-node_5a
+connection: node_5a-node_5b
+connection: node_5b-node_5c
+connection: node_5c-node_5d
+connection: node_5d-node_5e
+connection: node_5e-node_5f
+connection: node_5f-node_60
+connection: node_60-node_61
+connection: node_61-node_62
+connection: node_62-node_63
+connection: node_63-node_64
+connection: node_64-node_65
+connection: node_65-node_66
+connection: node_66-node_67
+connection: node_67-node_68
+connection: node_68-node_69
+connection: node_69-node_6a
+connection: node_6a-node_6b
+connection: node_6b-node_6c
+connection: node_6c-node_6d
+connection: node_6d-node_6e
+connection: node_6e-node_8a
+connection: node_8a-node_89
+connection: node_89-node_8b
+connection: node_8b-node_8c
+connection: node_8c-node_8d
+connection: node_8d-node_8e
+connection: node_8e-node_8f
+connection: node_8f-node_90
+connection: node_90-node_91
+connection: node_91-node_92
+connection: node_92-node_93
+connection: node_93-node_6f
+connection: node_6f-node_70
+connection: node_70-node_94
+connection: node_94-node_97
+connection: node_97-node_95
+connection: node_95-node_96
+connection: node_96-node_98
+connection: node_98-node_99
+connection: node_99-node_9a
+connection: node_9a-node_9b
+connection: node_9b-node_9c
+connection: node_9c-node_87
+connection: node_87-node_88
+connection: node_88-node_9d
+connection: node_9d-node_9e
+connection: node_9e-node_9f
+connection: node_9f-node_a0
+connection: node_a0-node_a1
+connection: node_a1-node_a2
+connection: node_a2-node_a3
+connection: node_a3-node_a4
+connection: node_a4-node_a5
+connection: node_a5-node_71
+connection: node_71-node_72
+connection: node_72-node_a6
+connection: node_a6-node_a9
+connection: node_a9-node_aa
+connection: node_aa-node_ad
+connection: node_ad-node_ae
+connection: node_ae-node_b1
+connection: node_b1-node_b2
+connection: node_b2-node_b7
+connection: node_b7-node_b6
+connection: node_b6-node_86
+connection: node_86-node_85
+connection: node_85-node_b5
+connection: node_b5-node_b4
+connection: node_b4-node_b3
+connection: node_b3-node_b0
+connection: node_b0-node_af
+connection: node_af-node_ac
+connection: node_ac-node_ab
+connection: node_ab-node_a8
+connection: node_a8-node_a7
+connection: node_a7-node_73
+connection: node_73-node_74
+connection: node_74-node_d0
+connection: node_d0-node_cf
+connection: node_cf-node_ca
+connection: node_ca-node_c9
+connection: node_c9-node_c4
+connection: node_c4-node_c3
+connection: node_c3-node_bf
+connection: node_bf-node_b8
+connection: node_b8-node_b9
+connection: node_b9-node_84
+connection: node_84-node_83
+connection: node_83-node_ba
+connection: node_ba-node_bd
+connection: node_bd-node_be
+connection: node_be-node_c2
+connection: node_c2-node_c5
+connection: node_c5-node_c8
+connection: node_c8-node_cb
+connection: node_cb-node_ce
+connection: node_ce-node_d1
+connection: node_d1-node_75
+connection: node_75-node_76
+connection: node_76-node_d2
+connection: node_d2-node_cd
+connection: node_cd-node_cc
+connection: node_cc-node_c7
+connection: node_c7-node_c6
+connection: node_c6-node_c1
+connection: node_c1-node_c0
+connection: node_c0-node_bc
+connection: node_bc-node_bb
+connection: node_bb-node_82
+connection: node_82-node_81
+connection: node_81-node_80
+connection: node_80-node_7f
+connection: node_7f-node_7e
+connection: node_7e-node_7d
+connection: node_7d-node_7c
+connection: node_7c-node_7b
+connection: node_7b-node_7a
+connection: node_7a-node_79
+connection: node_79-node_78
+connection: node_78-node_77
+connection: node_a-node_b

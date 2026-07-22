@@ -118,10 +118,7 @@ class ModelManager:
     @classmethod
     def get(cls, key: str) -> rl.Model:
         if key not in cls._models:
-            raise KeyError(
-                f"Model '{key}' was never loaded — call "
-                f"ModelManager.load('{key}', <path>) before get()"
-            )
+            raise KeyError(f"Model '{key}' was never loaded — call " f"ModelManager.load('{key}', <path>) before get()")
         return cls._models[key]
 
     @classmethod

@@ -1,17 +1,20 @@
 from .models import Drone, Hub, Map
-from .pathfinding import (find_path, register_path, real_zone_cost, PathStep, State, LinkKey)
+from .pathfinding import (PathFinder, PathStep, State, LinkKey)
 
 
 class Monitor:
 
     def __init__(self, game_map: Map) -> None:
+
         self.map: Map = game_map
         self.drones: list[Drone] = []
         self.turn: int = 0
         self.output_lines: list[str] = []
         self._paths: list[list[PathStep]] = []
+        self.pathfinder = PathFinder()
 
     def init_drones(self) -> None:
+
         if self.map.start_hub is None:
             raise ValueError("Map has no start_hub")
         if self.map.end_hub is None:
@@ -24,15 +27,9 @@ class Monitor:
 
         for i in range(self.map.nb_drones):
             drone = Drone(i + 1, self.map.start_hub)
-            steps = find_path(
-                self.map,
-                self.map.start_hub,
-                self.map.end_hub,
-                reservation,
-                link_reservation,
-            )
+            steps = self.pathfinder.find_path(self.map, self.map.start_hub, self.map.end_hub, reservation, link_reservation)
             if steps:
-                register_path(steps, start_name, reservation, link_reservation)
+                self.pathfinder.register_path(steps, start_name, reservation, link_reservation)
                 self._paths.append(steps)
             else:
                 self._paths.append([])
@@ -48,9 +45,7 @@ class Monitor:
         if not self._paths:
             return
 
-        last_turns = [
-            steps[-1][1] for steps in self._paths if steps
-        ]
+        last_turns = [steps[-1][1] for steps in self._paths if steps]
         if not last_turns:
             return
         total_turns = min(max(last_turns), max_turns)
@@ -68,10 +63,8 @@ class Monitor:
                     pos_turn = turn
                     continue
 
-                if real_zone_cost(hub) == 2:
-                    turns[pos_turn].append(
-                        f"D{drone_id + 1}-{pos}-{hub.name}"
-                    )
+                if self.pathfinder.real_zone_cost(hub) == 2:
+                    turns[pos_turn].append(f"D{drone_id + 1}-{pos}-{hub.name}")
 
                 pos = hub.name
                 pos_turn = turn
