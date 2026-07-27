@@ -1,14 +1,23 @@
+"""
+Turn-aware pathfinding for the Fly-in drone routing simulator.
+
+Implements a Dijkstra-style search over ``(hub, turn)`` states. Each
+drone is routed one at a time: the path found for a drone is
+"reserved" (hub occupancy per turn, and connection usage per turn)
+before the next drone is routed, so later drones automatically avoid
+capacity conflicts with earlier ones.
+"""
+
 import heapq
 from typing import Optional
+
 from .models import Hub, Map
 
-
-
 _REAL_COST: dict[str, int] = {
-    "normal":     1,
-    "priority":   1,
+    "normal": 1,
+    "priority": 1,
     "restricted": 2,
-    "blocked":    0,
+    "blocked": 0,
 }
 
 _MAX_TURNS = 200
@@ -20,31 +29,104 @@ PathStep = tuple[Hub, int]
 
 
 class PathFinder:
+    """Finds and reserves conflict-free paths for individual drones."""
 
-    def __init__(self):
-        pass
+    def __init__(self) -> None:
+        """Create a stateless pathfinder instance."""
 
-    def real_zone_cost(self, hub: Hub):
+    def real_zone_cost(self, hub: Hub) -> int:
+        """
+        Return the turn cost of moving onto ``hub``.
+
+        Args:
+            hub: Destination hub of the move.
+
+        Returns:
+            The number of turns the move takes, based on the hub's
+            zone type (see subject VII.3).
+        """
         return _REAL_COST.get(hub.zone, 1)
 
+    def path_cost(self, steps: list[PathStep]) -> int:
+        """
+        Return the total turn cost of a computed path.
 
-    def path_cost(self, steps: list[PathStep]):
+        Args:
+            steps: Path as returned by :meth:`find_path`.
+
+        Returns:
+            The turn at which the path's last step lands, or ``0``
+            for an empty path.
+        """
         if not steps:
             return 0
         return steps[-1][1]
 
-
-    def _link_key(self, a: str, b: str):
+    def _link_key(self, a: str, b: str) -> LinkKey:
+        """Build an order-independent key identifying a connection."""
         return (a, b) if a < b else (b, a)
 
-
     def _hub_capacity(self, hub: Hub) -> int:
+        """
+        Return the effective drone capacity of a hub.
+
+        The start and end hubs are exempt from capacity limits, per
+        subject VII.2.
+        """
         if hub.is_start or hub.is_end:
             return 10 ** 9
         return hub.max_drones
 
+    def _link_capacity_ok(
+        self,
+        lk: LinkKey,
+        dep_turn: int,
+        arrival: int,
+        link_reservation: dict[tuple[LinkKey, int], int],
+        conn_cap: int,
+    ) -> bool:
+        """
+        Check a connection has free capacity for a whole transit.
 
-    def _congestion_cost(self, current: Hub, neighbor: Hub, arrival: int, dep_turn: int, reservation: dict[State, int], link_reservation: dict[tuple[LinkKey, int], int], conn_cap: int):
+        A move from ``dep_turn`` to ``arrival`` occupies the
+        connection for every turn in between (this matters for
+        2-turn moves into ``restricted`` zones, which occupy the
+        connection during both turns of their transit, per subject
+        VII.3).
+
+        Args:
+            lk: Order-independent key of the connection.
+            dep_turn: Turn the drone departs from the current hub.
+            arrival: Turn the drone will land on the neighbor hub.
+            link_reservation: Per-(connection, turn) occupancy count.
+            conn_cap: Maximum simultaneous occupancy of the
+                connection.
+
+        Returns:
+            ``True`` if every turn of the transit has free capacity.
+        """
+        for t in range(dep_turn + 1, arrival + 1):
+            if link_reservation.get((lk, t), 0) >= conn_cap:
+                return False
+        return True
+
+    def _congestion_cost(
+        self,
+        current: Hub,
+        neighbor: Hub,
+        arrival: int,
+        dep_turn: int,
+        reservation: dict[State, int],
+        link_reservation: dict[tuple[LinkKey, int], int],
+        conn_cap: int,
+    ) -> float:
+        """
+        Soft heuristic penalizing already-crowded hubs/links.
+
+        This only influences which of several equally-short paths is
+        preferred; hard capacity limits are enforced separately in
+        :meth:`find_path` and :meth:`_link_capacity_ok`.
+        """
         node_cap = max(self._hub_capacity(neighbor), 1)
         node_load = reservation.get((neighbor.name, arrival), 0)
 
@@ -53,8 +135,13 @@ class PathFinder:
 
         return (node_load / node_cap) + (link_load / max(conn_cap, 1))
 
-
-    def _movement_penalty(self, current_state: State, came_from: dict[State, Optional[State]], next_name: str):
+    def _movement_penalty(
+        self,
+        current_state: State,
+        came_from: dict[State, Optional[State]],
+        next_name: str,
+    ) -> int:
+        """Soft heuristic discouraging back-and-forth detours."""
         prev = came_from.get(current_state)
         if prev is None:
             return 0
@@ -74,25 +161,56 @@ class PathFinder:
 
         return penalty
 
+    def find_path(
+        self,
+        game_map: Map,
+        start: Hub,
+        end: Hub,
+        reservation: dict[State, int],
+        link_reservation: dict[tuple[LinkKey, int], int],
+    ) -> list[PathStep]:
+        """
+        Find the best conflict-free path from ``start`` to ``end``.
 
-    def find_path(self, game_map: Map, start: Hub, end: Hub, reservation: dict[State, int], link_reservation: dict[tuple[LinkKey, int], int]):
+        Args:
+            game_map: Graph to search.
+            start: Hub the drone departs from.
+            end: Hub the drone must reach.
+            reservation: Per-(hub, turn) occupancy already committed
+                by previously routed drones.
+            link_reservation: Per-(connection, turn) occupancy
+                already committed by previously routed drones.
+
+        Returns:
+            An ordered list of ``(hub, turn)`` steps (excluding the
+            starting position), or an empty list if no valid path
+            exists within the turn budget.
+        """
         hub_map: dict[str, Hub] = {h.name: h for h in game_map.hubs}
 
         counter = 0
         start_priority = 1 if start.zone == "priority" else 0
         start_state: State = (start.name, 0)
 
-        heap: list[tuple[int, int, float, int, int, Hub]] = [(0, 0, 0.0, -start_priority, counter, start)]
+        heap: list[tuple[int, int, float, int, int, Hub]] = [
+            (0, 0, 0.0, -start_priority, counter, start)
+        ]
 
-        best: dict[State, BestScore] = {start_state: (0, 0.0, start_priority)}
+        best: dict[State, BestScore] = {
+            start_state: (0, 0.0, start_priority)
+        }
         came_from: dict[State, Optional[State]] = {start_state: None}
 
         while heap:
-            turn, detour, cong, neg_prio, _, current = heapq.heappop(heap)
+            turn, detour, cong, neg_prio, _, current = heapq.heappop(
+                heap
+            )
             prio = -neg_prio
             current_state: State = (current.name, turn)
 
-            known_d, known_c, known_p = best.get(current_state, (10 ** 9, float("inf"), -1))
+            known_d, known_c, known_p = best.get(
+                current_state, (10 ** 9, float("inf"), -1)
+            )
             if (
                 detour > known_d or (
                     detour == known_d and (
@@ -122,24 +240,26 @@ class PathFinder:
                     continue
 
                 conn = game_map.get_connection(current, neighbor)
-                conn_cap = conn.max_link_capacity if conn is not None else 1
+                conn_cap = (
+                    conn.max_link_capacity if conn is not None else 1
+                )
                 lk = self._link_key(current.name, neighbor.name)
-                if link_reservation.get((lk, turn + 1), 0) >= conn_cap:
+                if not self._link_capacity_ok(
+                    lk, turn, arrival, link_reservation, conn_cap
+                ):
                     continue
 
                 next_state: State = (neighbor.name, arrival)
-                next_detour = (
-                    detour +
-                    self._movement_penalty(current_state, came_from, neighbor.name)
+                next_detour = detour + self._movement_penalty(
+                    current_state, came_from, neighbor.name
                 )
-                next_cong = (
-                    cong +
-                    self._congestion_cost(
-                        current, neighbor, arrival, turn,
-                        reservation, link_reservation, conn_cap,
-                    )
+                next_cong = cong + self._congestion_cost(
+                    current, neighbor, arrival, turn,
+                    reservation, link_reservation, conn_cap,
                 )
-                next_prio = prio + (1 if neighbor.zone == "priority" else 0)
+                next_prio = prio + (
+                    1 if neighbor.zone == "priority" else 0
+                )
 
                 known_d2, known_c2, known_p2 = best.get(
                     next_state, (10 ** 9, float("inf"), -1)
@@ -148,7 +268,8 @@ class PathFinder:
                     next_detour > known_d2 or (
                         next_detour == known_d2 and (
                             next_cong > known_c2 or (
-                                next_cong == known_c2 and next_prio <= known_p2
+                                next_cong == known_c2
+                                and next_prio <= known_p2
                             )
                         )
                     )
@@ -178,7 +299,8 @@ class PathFinder:
                     detour < known_d2 or (
                         detour == known_d2 and (
                             wait_cong < known_c2 or (
-                                wait_cong == known_c2 and prio > known_p2
+                                wait_cong == known_c2
+                                and prio > known_p2
                             )
                         )
                     )
@@ -193,8 +315,26 @@ class PathFinder:
 
         return []
 
+    def _rebuild(
+        self,
+        came_from: dict[State, Optional[State]],
+        hub_map: dict[str, Hub],
+        end: Hub,
+        end_turn: int,
+    ) -> list[PathStep]:
+        """
+        Walk ``came_from`` back to the start and reverse it.
 
-    def _rebuild(self, came_from: dict[State, Optional[State]], hub_map: dict[str, Hub], end: Hub, end_turn: int):
+        Args:
+            came_from: Predecessor map built during the search.
+            hub_map: Lookup from hub name to :class:`Hub`.
+            end: Hub the search terminated on.
+            end_turn: Turn at which ``end`` was reached.
+
+        Returns:
+            The ordered list of ``(hub, turn)`` steps, excluding the
+            starting position.
+        """
         states: list[State] = []
         entry: Optional[State] = (end.name, end_turn)
 
@@ -205,10 +345,33 @@ class PathFinder:
         states.reverse()
         return [(hub_map[name], turn) for name, turn in states[1:]]
 
+    def register_path(
+        self,
+        steps: list[PathStep],
+        start_name: str,
+        reservation: dict[State, int],
+        link_reservation: dict[tuple[LinkKey, int], int],
+    ) -> None:
+        """
+        Commit a drone's path into the shared reservation tables.
 
-    def register_path(self, steps: list[PathStep], start_name: str, reservation: dict[State, int], link_reservation: dict[tuple[LinkKey, int], int]):
+        Every hub visited (including the start) reserves one unit of
+        capacity for the turn it is occupied. Every connection
+        traversed reserves one unit of capacity for *each* turn of
+        its transit — not just the departure turn — so that a
+        2-turn move into a ``restricted`` zone correctly blocks the
+        connection for both turns, per subject VII.3.
 
-        reservation[(start_name, 0)] = reservation.get((start_name, 0), 0) + 1
+        Args:
+            steps: Path as returned by :meth:`find_path`.
+            start_name: Name of the hub the drone started from.
+            reservation: Per-(hub, turn) occupancy table to update.
+            link_reservation: Per-(connection, turn) occupancy table
+                to update.
+        """
+        reservation[(start_name, 0)] = (
+            reservation.get((start_name, 0), 0) + 1
+        )
         for hub, turn in steps:
             key: State = (hub.name, turn)
             reservation[key] = reservation.get(key, 0) + 1
@@ -220,9 +383,10 @@ class PathFinder:
                 prev_turn = turn
                 continue
             lk = self._link_key(prev_name, hub.name)
-            link_state = (lk, prev_turn + 1)
-            link_reservation[link_state] = (
-                link_reservation.get(link_state, 0) + 1
-            )
+            for occupied_turn in range(prev_turn + 1, turn + 1):
+                link_state = (lk, occupied_turn)
+                link_reservation[link_state] = (
+                    link_reservation.get(link_state, 0) + 1
+                )
             prev_name = hub.name
             prev_turn = turn

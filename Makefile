@@ -1,11 +1,14 @@
 install:
 	uv sync
 
+# Usage: make run
+#        make run ARGS="maps/hard/01_maze_nightmare.txt"
+#        make run ARGS="--no-gui"
 run:
-	uv run python3 -m src
+	uv run python3 -m src $(ARGS)
 
 debug:
-	uv run python3 -m pdb -m src
+	uv run python3 -m pdb -m src $(ARGS)
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
