@@ -8,8 +8,6 @@ number and reason, as required by the subject's parser constraints
 (VII.4).
 """
 
-from typing import Optional
-
 from .models import Connection, Hub, Map, ParsingError
 
 _HUB_METADATA_KEYS = {"zone", "color", "max_drones"}
@@ -279,7 +277,7 @@ class Parser:
         game_map.connections.append(connection)
         return connection
 
-    def parse_input(self, path: str) -> Optional[Map]:
+    def parse_input(self, path: str) -> Map | None:
         """
         Parse a full map input file.
 

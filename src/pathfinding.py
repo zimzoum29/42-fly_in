@@ -9,7 +9,6 @@ capacity conflicts with earlier ones.
 """
 
 import heapq
-from typing import Optional
 
 from .models import Hub, Map
 
@@ -138,7 +137,7 @@ class PathFinder:
     def _movement_penalty(
         self,
         current_state: State,
-        came_from: dict[State, Optional[State]],
+        came_from: dict[State, State | None],
         next_name: str,
     ) -> int:
         """Soft heuristic discouraging back-and-forth detours."""
@@ -151,7 +150,7 @@ class PathFinder:
         if next_name == prev_name:
             penalty += 2
 
-        ancestor: Optional[State] = prev
+        ancestor: State | None = prev
         while ancestor is not None:
             anc_name, _ = ancestor
             if anc_name == next_name:
@@ -199,7 +198,7 @@ class PathFinder:
         best: dict[State, BestScore] = {
             start_state: (0, 0.0, start_priority)
         }
-        came_from: dict[State, Optional[State]] = {start_state: None}
+        came_from: dict[State, State | None] = {start_state: None}
 
         while heap:
             turn, detour, cong, neg_prio, _, current = heapq.heappop(
@@ -317,7 +316,7 @@ class PathFinder:
 
     def _rebuild(
         self,
-        came_from: dict[State, Optional[State]],
+        came_from: dict[State, State | None],
         hub_map: dict[str, Hub],
         end: Hub,
         end_turn: int,
@@ -336,7 +335,7 @@ class PathFinder:
             starting position.
         """
         states: list[State] = []
-        entry: Optional[State] = (end.name, end_turn)
+        entry: State | None = (end.name, end_turn)
 
         while entry is not None:
             states.append(entry)

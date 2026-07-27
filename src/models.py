@@ -7,8 +7,6 @@ project: map zones (:class:`Hub`), links between zones
 (:class:`ModelManager`).
 """
 
-from typing import Optional
-
 import pyray as rl
 
 
@@ -40,7 +38,7 @@ class Hub:
         self.x: int = x
         self.y: int = y
         self.zone: str = "normal"
-        self.color: Optional[str] = None
+        self.color: str | None = None
         self.max_drones: int = 1
         self.is_start: bool = is_start
         self.is_end: bool = is_end
@@ -65,7 +63,7 @@ class Connection:
         self.hub2: Hub = hub2
         self.max_link_capacity: int = max_link_capacity
 
-    def connects(self, hub: Hub) -> Optional["Hub"]:
+    def connects(self, hub: Hub) -> Hub | None:
         """
         Return the hub on the other side of ``hub``, if any.
 
@@ -100,7 +98,7 @@ class Drone:
         self.path: list[Hub] = []
         self.path_index: int = 0
         self.state: str = "waiting"
-        self.transit_target: Optional[Hub] = None
+        self.transit_target: Hub | None = None
 
     @property
     def is_arrived(self) -> bool:
@@ -108,7 +106,7 @@ class Drone:
         return self.state == "arrived"
 
     @property
-    def next_hub(self) -> Optional[Hub]:
+    def next_hub(self) -> Hub | None:
         """The next hub on this drone's assigned path, if any."""
         if not self.path:
             return None
@@ -145,12 +143,12 @@ class Map:
     def __init__(self) -> None:
         """Create an empty map."""
         self.nb_drones: int = 0
-        self.start_hub: Optional[Hub] = None
-        self.end_hub: Optional[Hub] = None
+        self.start_hub: Hub | None = None
+        self.end_hub: Hub | None = None
         self.hubs: list[Hub] = []
         self.connections: list[Connection] = []
 
-    def get_hub(self, name: str) -> Optional[Hub]:
+    def get_hub(self, name: str) -> Hub | None:
         """
         Look up a hub by name.
 
@@ -184,7 +182,7 @@ class Map:
 
     def get_connection(
         self, hub1: Hub, hub2: Hub
-    ) -> Optional[Connection]:
+    ) -> Connection | None:
         """
         Find the connection between two hubs, in either order.
 
