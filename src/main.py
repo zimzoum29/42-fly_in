@@ -7,10 +7,7 @@ from pyray import (
     clear_background,
     close_window,
     disable_cursor,
-    draw_cylinder_ex,
-    draw_model_ex,
     draw_plane,
-    draw_sphere,
     draw_text,
     end_drawing,
     end_mode_3d,
@@ -26,11 +23,10 @@ from pyray import (
     update_camera,
     Vector2,
     Vector3,
-    WHITE,
     window_should_close,
 )
 from .models import ModelManager
-from .parse import parse_input
+from .parse import Parser
 from .monitor import Monitor
 from .graphic import Graphic
 
@@ -39,7 +35,8 @@ _DRONE_MODEL_KEY  = "drone"
 
 def main() -> None:
 
-    game_map = parse_input("map1.txt")
+    parser = Parser()
+    game_map = parser.parse_input("maps/easy/01_linear_path.txt")
     if game_map is None:
         return
 

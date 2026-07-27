@@ -41,7 +41,6 @@ class Graphic:
     def __init__(self):
         pass
 
-
     def hub_color(self, hub: Hub) -> tuple[int, int, int, int]:
         if hub.is_start and hub.color is None:
             return _START_COLOR
@@ -70,22 +69,14 @@ class Graphic:
             span = step_turn - prev_turn
             t = (turn - prev_turn) / span if span > 0 else 1.0
             p0, p1 = self._hub_pos(prev_hub), self._hub_pos(step_hub)
-            return Vector3(
-                self._lerp(p0.x, p1.x, t),
-                self._lerp(p0.y, p1.y, t),
-                self._lerp(p0.z, p1.z, t),
-            )
+            return Vector3(self._lerp(p0.x, p1.x, t), self._lerp(p0.y, p1.y, t), self._lerp(p0.z, p1.z, t))
         return self._hub_pos(prev_hub)
 
 
     def draw_drone_at(self, pos: Vector3) -> None:
 
         model = ModelManager.get(_DRONE_MODEL_KEY)
-        draw_model_ex(
-            model, pos,
-            Vector3(0.0, 1.0, 0.0), -90.0,
-            Vector3(1.0, 1.0, 1.0), WHITE,
-        )
+        draw_model_ex(model, pos, Vector3(0.0, 1.0, 0.0), -90.0, Vector3(1.0, 1.0, 1.0), WHITE)
 
 
     def draw_drones_at_turn(self, paths: list[list[PathStep]], start_hub: Hub, turn: float) -> None:
@@ -123,5 +114,4 @@ class Graphic:
         wx = hub.x * _SCALE
         wy = 1.5
         wz = hub.y * _SCALE
-
         draw_model_ex(model, Vector3(wx, wy, wz), Vector3(0.0, 1.0, 0.0), -90.0, Vector3(1.0, 1.0, 1.0), WHITE)
